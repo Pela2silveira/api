@@ -69,6 +69,9 @@ export function initAPI(app: Express) {
     app.use('/api/modules/gestor-usuarios', require('./modules/gestor-usuarios').PerfilesRouter);
     app.use('/api/modules/huds', require('./modules/huds').HudsAccesoRouter);
     app.use('/api/modules/webhook', require('./modules/webhook').WebhookRouter);
+    app.use('/api/modules/rup/internacion', require('./modules/rup/internacion').CamasRouter);
+    app.use('/api/modules/rup/internacion', require('./modules/rup/internacion').EstadosRouter);
+    app.use('/api/modules/rup/internacion', require('./modules/rup/internacion').CensosRouter);
 
     /**
      * Inicializa las rutas para adjuntar archivos
