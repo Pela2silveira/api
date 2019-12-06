@@ -781,15 +781,14 @@ export async function checkRepetido(nuevoPaciente): Promise<{ resultadoMatching:
         return (elem.paciente.id !== nuevoPaciente.id) && (elem.match > config.mpi.cotaMatchMin);
     });
 
-    // Extraemos los validados de los resultados
-    let similaresValidados = candidatos.filter(elem => elem.paciente.estado === 'validado');
     // Si el nuevo paciente está validado, filtramos los candidatos temporales
     if (nuevoPaciente.estado === 'validado') {
-        candidatos = similaresValidados;
+        // Extraemos los validados de los resultados
+        candidatos = candidatos.filter(elem => elem.paciente.estado === 'validado');
     }
 
     let macheoAlto = (candidatos.filter(element => element.match > config.mpi.cotaMatchMax).length > 0);
-    let dniRepetido = similaresValidados.filter(element =>
+    let dniRepetido = candidatos.filter(element =>
         (element.paciente.sexo.toString() === matchingInputData.sexo.toString() && element.paciente.documento.toString() === matchingInputData.documento.toString())
     ).length > 0;
 
@@ -822,6 +821,7 @@ export async function validarPaciente(pacienteAndes, req: any = configPrivate.us
     }
     let sexoQuery = sexoPaciente === 'masculino' ? 'M' : 'F';
     let resRenaper: any;
+    let valorMatching = null;
 
     try {
         resRenaper = await getServicioRenaper({ documento: pacienteAndes.documento, sexo: sexoQuery });
@@ -830,12 +830,12 @@ export async function validarPaciente(pacienteAndes, req: any = configPrivate.us
             let match = new Matching();
             let matchPacienteRena = {
                 documento: pacienteAndes.documento,
-                nombre: resRenaper.datos.nombres,
-                apellido: resRenaper.datos.apellido,
+                nombre: resRenaper.datos.nombres.toUpperCase(),
+                apellido: resRenaper.datos.apellido.toUpperCase(),
                 fechaNacimiento: resRenaper.datos.fechaNacimiento,
-                sexo: sexoQuery
+                sexo: sexoPaciente
             };
-            let valorMatching = match.matchPersonas(pacienteAndes, matchPacienteRena, weights, config.algoritmo);
+            valorMatching = match.matchPersonas(pacienteAndes, matchPacienteRena, weights, config.algoritmo);
             resRenaper.datos.matching = valorMatching;
             andesLog(req, logKeys.validacionPaciente.key, pacienteAndes.id, logKeys.validacionPaciente.operacion, resRenaper.datos, pacienteAndes);
         } else {
@@ -851,6 +851,7 @@ export async function validarPaciente(pacienteAndes, req: any = configPrivate.us
         let pacienteRenaper = resRenaper.datos;
         band = regtest.test(pacienteRenaper.nombres);
         band = band || regtest.test(pacienteRenaper.apellido);
+        // !caracteres extraños en nombre y/o apellido??
         if (!band) {
             pacienteAndes.nombre = pacienteRenaper.nombres;
             pacienteAndes.apellido = pacienteRenaper.apellido;
@@ -864,7 +865,6 @@ export async function validarPaciente(pacienteAndes, req: any = configPrivate.us
             return { paciente: pacienteAndes, validado: true };
         } else {
             return await validarSisa(pacienteAndes, req, pacienteRenaper.foto);
-
         }
     } else {
         return await validarSisa(pacienteAndes, req);
@@ -877,7 +877,13 @@ async function validarSisa(pacienteAndes: any, req: any, foto = null) {
 
         pacienteAndes.sexo = sexoPaciente;
         let resSisa: any = await matchSisa(pacienteAndes);
-        andesLog(req, logKeys.validacionPaciente.key, pacienteAndes._id, logKeys.validacionPaciente.operacion, resSisa);
+
+        // el paciente ya estaba registrado como temporal?
+        if (pacienteAndes.id) {
+            andesLog(req, logKeys.validacionPaciente.key, pacienteAndes._id, logKeys.validacionPaciente.operacion, resSisa, pacienteAndes);
+        } else {
+            andesLog(req, logKeys.validacionPaciente.key, pacienteAndes._id, logKeys.validacionPaciente.operacion, resSisa);
+        }
 
         pacienteAndes.nombre = resSisa.matcheos.datosPaciente.nombre;
         pacienteAndes.apellido = resSisa.matcheos.datosPaciente.apellido;
