@@ -30,7 +30,8 @@ export const AuthUsersSchema = new mongoose.Schema({
             nombre: String
         }]
     }],
-    lastLogin: Date
+    lastLogin: Date,
+    disclaimers: [{ createdAt: Date, _id: { type: mongoose.Schema.Types.ObjectId, ref: 'dislaimer' } }],
 });
 AuthUsersSchema.plugin(AuditPlugin);
 
