@@ -208,6 +208,7 @@ export const conSql = {
     },
     serverSql: {
         server: '',
+        port: '', 
         database: ''
     },
     pool: {
