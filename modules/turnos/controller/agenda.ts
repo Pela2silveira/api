@@ -1482,8 +1482,8 @@ export async function verificarSolapamiento(data) {
                     profesionales = profesionales.concat(resultado.profesionales);
                     org = resultado.organizacion.nombre;
                     agendaCreadaPor = resultado.createdBy.nombreCompleto;
-                    for (let PrestacionAg of resultado.tipoPrestaciones) {
-                        prestacionesAgenda = prestacionesAgenda.concat(PrestacionAg.term);
+                    for (let prestacionAg of resultado.tipoPrestaciones) {
+                        prestacionesAgenda = prestacionesAgenda.concat(prestacionAg.term);
                     }
                 }
                 if (profesionales.some(p => profesionalesIds.some(p2 => p2.toString() === p._id.toString()))) {
