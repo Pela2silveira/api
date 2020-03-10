@@ -1,3 +1,5 @@
+import { NovedadesRouter } from './modules/registro-novedades/novedades.routes';
+import { ModulosRouter } from './modules/registro-novedades/modulos.routes';
 import * as bodyParser from 'body-parser';
 import * as boolParser from 'express-query-boolean';
 import * as config from './config';
@@ -67,6 +69,8 @@ export function initAPI(app: Express) {
 
     app.use('/api/modules/gestor-usuarios', require('./modules/gestor-usuarios').UsuariosRouter);
     app.use('/api/modules/gestor-usuarios', require('./modules/gestor-usuarios').PerfilesRouter);
+    app.use('/api/modules/registro-novedades', require('./modules/registro-novedades').ModulosRouter);
+    app.use('/api/modules/registro-novedades', require('./modules/registro-novedades').NovedadesRouter);
     app.use('/api/modules/huds', require('./modules/huds').HudsAccesoRouter);
     app.use('/api/modules/webhook', require('./modules/webhook').WebhookRouter);
     app.use('/api/modules/webhook', require('./modules/webhook/webhooklog').WebhookLogRouter);
